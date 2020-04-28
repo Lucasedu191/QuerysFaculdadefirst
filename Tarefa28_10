@@ -1,0 +1,181 @@
+/*1)
+1a) Apresente os comandos SQL para criação da nova tabela conforme o modelo relacional abaixo:
+   TB_Pais (#Cod_pais: texto (2),
+            Nacionalidade: texto (30),
+          Descr_pais:  texto (50))
+*/
+
+--> inserir a resposta
+
+create table TB_Pais(
+CodPais int primary key,
+Nacionalidade varchar (30),
+Descr_pais  varchar (50)
+)
+
+/*
+1b) Apresente os comandos SQL para incluir x registros de paises na tabela TB_Pais. Sendo que:
+    x = resto da divisão por 10 da quantidade de caracteres do seu nome completo. Se resto igual 0, então x = 1
+    Exemplo:    MARCELO FERMANN GUIMARAES = 23 caracteres  sem espaços
+    23/10 = 2,3
+    x = 3
+    -> para o nome do exemplo deve-se inserir 3 países na tabela TB_Pais
+*/
+
+--> inserir a resposta
+insert into TB_Pais values (1, 'Estados Unidos', 'continente americano.')
+insert into TB_Pais values (2, 'Africa do Sul',	'Localizado entre os oceanos Atlântico e Índico.')
+insert into TB_Pais values (3, 'Autralia', 'Localizado na Oceania')
+insert into TB_Pais values (4, 'Argentina', 'Pais Sul-Americano')
+insert into TB_Pais values (2, 'Alemanha',	'País europeu.')
+insert into TB_Pais values (3, 'Austria', 'Limita-se ao sul com o Mar Báltico')
+/*
+1c) Apresente os comandos SQL para incluir o código do pais na tabela TB_Autor como chave estrangeira incluindo a integridade referencial e excluindo a coluna NacionalidadeAutor (não é mais necessária).
+    Tabela TB_Autor final:
+    TB_Autor(#MatrAutor inteiro,
+             NomeAutor texto (80),
+             CPFAutor texto (12) ,
+             EndResidencialAutor texto (120),
+             DataNascimentoAutor data,
+             PaisAutor texto (2),
+             PaisAutor referencia TB_Pais (CodPais))
+*/
+
+--> inserir a resposta
+ALTER TABLE TB_Autor
+DROP COLUMN  NacionalidadeAutor
+
+ALTER TABLE TB_Autor
+ADD pais VARCHAR(2);
+
+ALTER TABLE TB_Autor
+ADD CONSTRAINT fk_pais FOREIGN KEY (pais) REFERENCES TB_Pais (Codpais)
+
+UPDATE TB_Autor
+SET pais = 'BR'
+
+
+/*
+2) Apresente, em ordem alfabética, o nome dos autores que tenham livros lançados, com data de nascimento, idade prevista no ano que vem e nacionalidade.
+*/
+
+--> inserir a resposta
+select *  from TB_Autor  order by NomeAutor 
+
+
+ /*
+3) Apresente 2 comandos SQL que listem o Cod. Pais e Descrição do pais que não têm autores cadastrados.
+*/
+
+--> inserir a resposta
+SELECT * FROM TB_AUTOR  inner join  TB_Pais on (Codpais = pais) WHERE PAIS IS NULL 
+
+/*
+4) Apresente a lista de paises cadastrados e o respectivo total de autores incluindo países que eventualmente não tenham nenhum autor).
+*/
+
+--> inserir a resposta
+select *,
+ (select count(*) from TB_Autor where pais = Codpais)
+from TB_Pais 
+
+/*
+5)   Apresente a lista de paises cadastrados e a respectiva quantidade total de autores que possuam pelo menos 2 livros lançados.
+*/
+
+--> inserir a resposta
+select *,
+ ( SELECT COUNT(*) FROM TB_Autor A WHERE  (select count(*) from TB_AutorLivro WHERE A. MatrAutor = MatrAutor) > 2   )
+from TB_Pais
+
+
+/*6)
+6a) Observando a integridade referencial entre TB_Autor e TB_Endereco,
+    apresente os comandos SQL para criação da nova tabela conforme o modelo relacional abaixo:
+    TB_Endereco (#TipoEndereco: inteiro , /*1 - residencial , 2 - comercial , 3 - outro */
+                #MatrAutor inteiro,
+                MatrAutor referencia TB_Autor (MatrAutor)
+                Descr_Endereco texto (120))
+*/
+--> inserir a resposta
+CREATE TABLE TB_Endereco (
+  TipoEndereco INT,
+  MatrAutorEND INT,
+  Descr_Endereco VARCHAR(120)
+)
+
+
+
+/*
+6b) Considerando que para Endereço Residencial o TipoEndereco deve ser 1, apresente comandos SQL para:
+    - incluir os endereços residenciais dos autores na TB_Endereco e
+    - excluir os endereços residenciais da TB_Autor
+*/
+--> inserir a resposta
+INSERT INTO TB_Endereco(TipoEndereco, MatrAutorEND, Descr_Endereco)
+SELECT 
+  1,
+  MatrAutor,
+  EndResidencialAutor
+FROM 
+  TB_Autor
+
+UPDATE TB_Autor
+SET EndResidencialAutor = NULL
+
+
+/*
+6c) Apresente os comandos SQL para incluir x novos endereços na TB_Endereco. Sendo que:
+    x = resto da divisão por 10 da quantidade de caracteres do seu nome completo. Se resto igual 0, então x = 1
+    Exemplo:    MARCELO FERMANN GUIMARAES = 23 caracteres  sem espaços
+    23/10 = 2,3
+    x = 3
+    -> para o nome do exemplo deve-se inserir 3 novos endereços na tabela TB_Endereco
+        
+*/
+
+
+
+/*
+7) Apresente, em ordem de nome de Pais, os assuntos de todos os livros que já tenham sido lançados, incluindo o nome dos autores e das respectivas Editoras
+*/
+SELECT DISTINCT Assunto, NomeAutor, Nome FROM TB_Livro A INNER JOIN TB_AutorLivro B ON (A.CodLivro = B.CodLivro) INNER JOIN TB_Autor C ON(C.MatrAutor = B.MatrAutor) INNER JOIN TB_Editora ON(A.Editora = Editora)
+WHERE Lancamento IS NOT NULL 
+
+/*
+8) Apresente 2 comandos SQL diferentes que listem Matricula e Nome dos Autores que não têm endereço comercial cadastrado
+              obs.: endereço comercial é aquele em que TipoEndereco = 2.
+*/
+SELECT MatrAutor AS MATRICULA, NomeAutor FROM TB_Autor A INNER JOIN TB_Endereco B ON (A.MatrAutor = B.MatrAutorEND) WHERE TipoEndereco <> 2
+
+SELECT MatrAutor AS MATRICULA, NomeAutor FROM TB_Autor A,TB_Endereco B  WHERE A.MatrAutor = B.MatrAutorEND AND  TipoEndereco <> 2 
+
+
+/*
+9) Apresente a quantidade total de endereços cadastrados para cada matrícula e nome autor, incluindo os autores que eventualmente  não tenham nenhum endereço.
+*/
+SELECT 
+(SELECT COUNT(*) FROM TB_Endereco WHERE A.MatrAutor = MatrAutor) QTDE,
+  *
+  FROM 
+  TB_Autor A 
+
+
+/*
+10) Apresente, em ordem alfabética, o nome dos autores e a Descrição do Pais para os autores de livros que já tenham sido lançados que tenham menos de 3 Endereços cadastrados.
+             Observação: incluir na listagem eventuais autores que não tenham endereços
+*/
+SELECT DISTINCT
+  NomeAutor,
+  Descr_pais
+FROM
+  TB_Livro A INNER JOIN TB_AutorLivro B ON (A.CodLivro = B.CodLivro) INNER JOIN TB_Autor C ON(C.MatrAutor = B.MatrAutor) INNER JOIN TB_Editora ON(A.Editora = Editora)
+  inner join TB_Pais ON(Cod_pais = C.pais )
+WHERE Lancamento IS NOT NULL AND (SELECT COUNT(*) FROM TB_Endereco WHERE MatrAutorEND = C.MatrAutor) < 3
+
+
+SELECT * FROM TB_Autor
+SELECT * FROM TB_Livro
+SELECT * FROM TB_AutorLivro
+SELECT * FROM TB_Pais
+SELECT * FROM TB_Endereco

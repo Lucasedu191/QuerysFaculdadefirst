@@ -1,0 +1,27 @@
+tbmecanico(codigo, nome, endereço, especialidade)
+codigo referencia tbequipe
+
+tbos(codigo, dt_de_emissão, valor, dt_conclusão, cod.equipe)
+codigo referencia tbserviço,
+cod.equipe referencia tbequipe
+
+tbserviço(codigo, preco_total, preco_mao_de_obra)
+codigo referencia tbpecas
+codigo referencia tbos
+
+tbequipe(codigo, area)
+codigo referencia tbmecanico
+area referencia tbos
+
+tbpecas(codigo, preco)
+codigo referencia tbserviço
+preco referencia tbpecas
+
+tbveiculo(codigo, placa, descricao)
+codigo referencia tbcliente
+
+tbcliente(codigo, nome, endereço, telefone) 
+codigo referencia tbveiculo
+
+tbmao_de_obra(codigo, preco, servico)
+servico referencia tbserviço

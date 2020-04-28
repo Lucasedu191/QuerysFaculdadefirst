@@ -1,0 +1,60 @@
+/*1)(3 pontos)
+1a) Apresente os comandos SQL para criação da nova tabela conforme o modelo relacional abaixo:
+tbPessoa (#PessoaID: inteiro,
+Nome: texto (50))
+*/
+CREATE TABLE tbPessoa
+( PessoaID INT IDENTITY(1,1) PRIMARY KEY,
+  PessoaNome VARCHAR(50))
+
+/*
+1b) Apresente os comandos SQL para que a tabela recém criada seja a tabela generalizada (tbPessoa)
+e as tabelas tbVendedor e tbCliente sejam as tabelas especializadas.
+obs.: incluir os comandos para alteração das tabelas especializadas (referências para a tabela generalizada)
+e observar que nenhuma informação seja perdida nem duplicada.
+*/
+
+
+/*
+2) (1 ponto) Apresente o nome dos clientes, o ID de Pedido e Data de Pedido, Valor e data
+de pagamento, ID e Nome dos produtos dos respectivos pedidos para os pagamentos
+maiores que 80.
+*/
+
+SELECT cliente.ClienteNome, pedido.PedidoID, pedido.PedidoData, pagamento.PagamentoValor , pagamento.PagamentoData, pagamento.PagamentoID, produto.ProdutoNome FROM 
+TbCliente AS cliente
+INNER  JOIN tbPedido AS pedido ON pedido.PedidoID = cliente.ClienteID 
+INNER  JOIN tbPagamento AS pagamento ON pagamento.PagamentoID = pedido.PedidoID
+INNER  JOIN tbProduto AS produto ON produto.produtoID = pagamento.PagamentoID
+WHERE pagamento.PagamentoValor > 80;
+/*
+3) (2 pontos) Listar os IDs, nomes e telefones dos clientes que tenham gasto mais que 100
+*/
+SELECT T1.ClienteID ,T1.ClienteNome,T1.ClienteTelefone 
+FROM tbCliente T1 
+inner join tbPedido T2 on T2.ClienteID = T1.ClienteID
+inner JOIN tbPedidoItem T3  on T3.PedidoID = T2.PedidoID
+inner join tbProduto T4  on T3.ProdutoID = t4.ProdutoID
+group by T1.ClienteID ,T1.ClienteNome,T1.ClienteTelefone 
+having count (t4.ProdutoValor) > 100
+
+/*
+4) (2 pontos) Apresente a lista de clientes (ClienteID e PessoaNome) e sua quantidade de
+pagamentos (em tbPagamento). Caso, eventualmente, algum cliente não tenham
+nenhum pagamento, apresentar 0 como total de pagamentos nesses casos.
+*/
+SELECT cliente.ClienteID, pessoa.PessoaNome, pagamento.PagamentoValor 
+	FROM tbPessoa AS pessoa
+	FULL OUTER JOIN tbCliente AS cliente ON pessoa.PessoaID = cliente.ClienteID
+	FULL OUTER JOIN tbPagamento AS pagamento ON pagamento.PagamentoID = cliente.ClienteID;
+
+/*
+5) (2 pontos) Apresente 2 comandos SQL diferentes que listem os produtos (ID, Nome e valor) que
+ainda não tiveram vendas
+*/
+
+	select ProdutoID, ProdutoNome, ProdutoValor from tbProduto where not exists 
+       (select 'x' from tbPedidoItem where tbPedidoItem.ProdutoID = tbProduto.ProdutoID)
+
+	select ProdutoID, ProdutoNome, ProdutoValor from tbProduto where tbProduto.ProdutoID NOT IN
+       (select tbPedidoItem.ProdutoID from tbPedidoItem)
